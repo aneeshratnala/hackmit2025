@@ -3,6 +3,75 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["public"]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projects Project[]
+  files    ProjectFile[]
+
+  @@map("users")
+  @@schema("public")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  subject     String?
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files ProjectFile[]
+  video ProjectVideo?
+
+  @@map("projects")
+  @@schema("public")
+}
+
+model ProjectFile {
+  id        String   @id @default(cuid())
+  filename  String
+  fileType  String
+  fileSize  Int
+  fileUrl   String
+  projectId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("project_files")
+  @@schema("public")
+}
+
+model ProjectVideo {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  videoUrl  String?
+  status    String   @default("pending") // pending, processing, completed, failed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_videos")
+  @@schema("public")
 }
