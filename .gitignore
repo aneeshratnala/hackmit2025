@@ -1,1 +1,3 @@
-frontend2/node_modules
+frontend2/node_modules/
+frontend2/.env.local
+frontend2/.next/
